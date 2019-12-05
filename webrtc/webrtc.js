@@ -6,26 +6,37 @@ function on_hash() {
 }
 
 function on_dom() {
-	console.log('on_dom');
-	const video = document.querySelector('#vd');
-	const btn_play = document.querySelector('#Play');
-	btn_play.addEventListener('click', play);
-	function play(e) {
-		navigator.getUserMedia(
-			{
-				video: true,
-				audio: true,
-			},
-			function(s) {
-				video.srcObject = s;
-				console.log(s);
-			},
-			function(e) {
-				console.log(e);
-			},
-		);
-	}
 
+	const msg = document.querySelector('pre#msg');
+	
+
+	const srvs = {
+		'iceServers': [
+			{
+				'url': 'stun:turn.mywebrtc.com'
+			},
+			{
+				'url': 'turn:turn.mywebrtc.com',
+				'credential': 'siEFid93lsd1nF129C4o',
+				'username': 'webrtcuser'
+			}
+		]
+	};
+
+	const pc = new RTCPeerConnection(srvs);
+	pc.onicecandidate  = function(ev) {
+		msg.innerText += `icecandidate ${ev}\n`;
+	};
+	pc.createOffer(
+		function(desc) {
+			msg.innerText += `createOffer ${desc}\n`;
+			msg.innerText += `createOffer ${JSON.stringify(desc.toJSON())}\n`;
+		},
+		function(err) {
+			msg.innerText += 'createOffer Error\n';
+		}
+	);
+	msg.innerText += 'on_dom done\n';
 }
 
 [
@@ -34,12 +45,5 @@ function on_dom() {
 ].forEach(function(i) {
 	window.addEventListener(i[0], i[1]);
 });
-
-navigator.getUserMedia = ( navigator.getUserMedia ||
-	navigator.webkitGetUserMedia ||
-	navigator.mozGetUserMedia ||
-	navigator.msGetUserMedia);
-
-console.log(navigator.getUserMedia);
 
 })();
